@@ -1,6 +1,8 @@
 const gallery = document.getElementById('gallery')
 const userInfoCard = document.getElementsByClassName('card')
 
+var userInfoArray 
+
 //checks the status of a fetch request and returns a rejection/resolution
 function checkStatus(response) {
     if (response.ok) {
@@ -22,21 +24,24 @@ function fetchData(url) {
 
 //call to API
 fetchData('https://randomuser.me/api/?results=12')
-    .then(data => generateUsers(data.results))
+    .then(data => {
+        generateUsers(data.results)
+        userInfoArray = data.results
+    })
 
 //generates the div for the employee info
 function generateUsers(data) {
     for(i=0; i<data.length; i++) {
         const cardDiv = document.createElement('DIV')
         cardDiv.innerHTML = `
-            <div class="card">
-                <div class="card-img-container">
-                    <img class="card-img" src="${data[i].picture.medium}" alt="profile picture">
+            <div class="card" position=${i}>
+                <div class="card-img-container" position=${i}>
+                    <img class="card-img" position=${i} src="${data[i].picture.medium}" alt="profile picture">
                 </div>
-                <div class="card-info-container">
+                <div class="card-info-container" position=${i}>
                     <h3 id="name" class="card-name cap">${data[i].name.first + ' ' + data[i].name.last}</h3>
-                    <p class="card-text">${data[i].email}</p>
-                    <p class="card-text cap">${data[i].location.city + ', ' + data[i].location.state}</p>
+                    <p class="card-text" position=${i}>${data[i].email}</p>
+                    <p class="card-text cap" position=${i}>${data[i].location.city + ', ' + data[i].location.state}</p>
                 </div>
             </div>
             `
@@ -60,14 +65,14 @@ function generateModal(data) {
         <div class="modal">
             <button type="button" id="modal-close-btn" class="modal-close-btn"><strong>X</strong></button>
             <div class="modal-info-container">
-                <img class="modal-img" src="${data.results.picture.large}" alt="profile picture">
-                <h3 id="name" class="modal-name cap">${data.results.name.first} ${data.results.name.last}</h3>
-                <p class="modal-text">${data.results.email}</p>
-                <p class="modal-text cap">${data.results.location.city}</p>
+                <img class="modal-img" src="${data.picture.large}" alt="profile picture">
+                <h3 id="name" class="modal-name cap">${data.name.first} ${data.name.last}</h3>
+                <p class="modal-text">${data.email}</p>
+                <p class="modal-text cap">${data.location.city}</p>
                 <hr>
-                <p class="modal-text">${data.results.phone}</p>
-                <p class="modal-text">${data.results.location.street}, ${data.results.location.state}, ${data.results.location.postcode}</p>
-                <p class="modal-text">Birthday: ${data.results.dob}</p>
+                <p class="modal-text">${data.phone}</p>
+                <p class="modal-text">${data.location.street}, ${data.location.state}, ${data.location.postcode}</p>
+                <p class="modal-text">Birthday: ${data.dob.date}</p>
             </div>
         </div>
     `
@@ -76,5 +81,15 @@ function generateModal(data) {
 
 //card event listener to generate modal
 gallery.addEventListener('click', e => {
-    generateModal(data)
+    if((cardPosition = e.target.getAttribute("position")) !== null) {
+        generateModal(userInfoArray[cardPosition])
+    }
+})
+
+//modal close button
+document.querySelector('body').addEventListener('click', e => {
+    if ((e.target.className === 'modal-close-btn' && e.target.type === 'button')
+    || e.target.textContent === 'X') {
+    document.querySelector('.modal-container').remove()
+    }
 })
